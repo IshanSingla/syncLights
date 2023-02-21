@@ -1,0 +1,20 @@
+{
+  "name": "synclights",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "scripts": {
+    "dev": "nodemon",
+    "start": "node"
+  },
+  "author": "IshanSingla <is.ishan.singla@gmail.com>",
+  "license": "ISC",
+  "dependencies": {
+    "dotenv": "^16.0.3",
+    "ejs": "^3.1.8",
+    "express": "^4.18.2",
+    "morgan": "^1.10.0",
+    "nodemon": "^2.0.20",
+    "socket.io": "^4.6.1"
+  }
+}
