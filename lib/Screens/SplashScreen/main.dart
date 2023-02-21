@@ -3,6 +3,7 @@ import 'dart:async';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:synclights/Components/scaffold.dart';
+import 'package:synclights/Screens/SplashScreen/Components/body.dart';
 import 'package:synclights/utils/auth.dart';
 
 class SplashScreen extends StatefulWidget {
@@ -40,25 +41,16 @@ class _SplashState extends State<SplashScreen> {
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: Colors.black,
-      body: Center(
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: const [
-            Text(
-              "SyncLights",
-              style: TextStyle(
-                color: Colors.white,
-                fontSize: 40,
-                fontWeight: FontWeight.bold,
-              ),
-            ),
-            SizedBox(height: 20),
-            CircularProgressIndicator(
-              color: Colors.white,
-            ),
-          ],
+      body: Stack(children: [
+        Container(
+          decoration: const BoxDecoration(
+            image: DecorationImage(
+                image: AssetImage('assets/background/Splash.png'),
+                fit: BoxFit.cover),
+          ),
         ),
-      ),
+        Body()
+      ]),
     );
   }
 }

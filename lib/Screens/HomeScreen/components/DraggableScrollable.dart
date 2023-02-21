@@ -1,32 +1,23 @@
-// ignore_for_file: non_constant_identifier_names
+// ignore_for_file: non_constant_identifier_names, avoid_function_literals_in_foreach_calls
 
 import 'package:flutter/material.dart';
-import 'package:synclights/Components/scaffold.dart';
+import 'package:synclights/Screens/HomeScreen/components/ListGrids.dart';
 import 'package:synclights/data/lights.dart';
+import 'package:synclights/utils/CoustomColours.dart';
 
 class DraggableScrollable extends StatefulWidget {
   const DraggableScrollable({super.key});
-
   @override
-  _DraggableScrollableState createState() => _DraggableScrollableState();
+  DraggableScrollableState createState() => DraggableScrollableState();
 }
 
-class _DraggableScrollableState extends State<DraggableScrollable> {
+class DraggableScrollableState extends State<DraggableScrollable> {
   Future<List<Lights>> getLights() async {
     ListLights listLights = ListLights();
     List<Lights> lights = await listLights.getLights(context);
-    for (var i = 0; i < lights.length; i++) {
-      Listing.add(
-        SizedBox(
-          height: 30,
-          child: Center(
-              child: Text(
-            lights[i].name,
-            style: TextStyle(fontSize: 20),
-          )),
-        ),
-      );
-    }
+    lights.forEach((element) {
+      Listing.add(LastGrids(id: element.id, name: element.name));
+    });
     setState(() {});
     return lights;
   }
@@ -37,7 +28,7 @@ class _DraggableScrollableState extends State<DraggableScrollable> {
     getLights();
   }
 
-  var Listing = [
+  List<Widget> Listing = [
     const SizedBox(
       height: 50,
       child: Center(
@@ -50,14 +41,17 @@ class _DraggableScrollableState extends State<DraggableScrollable> {
   @override
   Widget build(BuildContext context) {
     return DraggableScrollableSheet(
-        initialChildSize: 0.07,
-        minChildSize: 0.07,
+        initialChildSize: 0.08,
+        minChildSize: 0.08,
         maxChildSize: 1,
         snapSizes: [0.5, 1],
         snap: true,
         builder: (BuildContext context, scrollSheetController) {
-          return Container(
-            color: Color.fromARGB(70, 0, 0, 0),
+          return Card(
+            color: CustomColours.transGreen,
+            shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(25.0),
+            ),
             child: ListView.builder(
               padding: EdgeInsets.zero,
               physics: const ClampingScrollPhysics(),

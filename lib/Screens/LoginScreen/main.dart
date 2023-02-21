@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:synclights/utils/auth.dart';
 import 'components/body.dart';
 
 class LoginScreen extends StatefulWidget {
@@ -10,15 +9,18 @@ class LoginScreen extends StatefulWidget {
 }
 
 class _LoginScreenState extends State<LoginScreen> {
-  void initState() {
-    // check(context);
-    super.initState();
-  }
-
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      body: Body(),
-    );
+        body: Stack(children: [
+      Container(
+        decoration: const BoxDecoration(
+          image: DecorationImage(
+              image: AssetImage('assets/background/Login.png'),
+              fit: BoxFit.cover),
+        ),
+      ),
+      Body()
+    ]));
   }
 }
