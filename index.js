@@ -2,10 +2,7 @@
 const express = require("express");
 const http = require("http");
 const socket = require("socket.io");
-const { stringify } = require("querystring");
 require("dotenv").config();
-const path = require("path");
-
 const { getIPAddress } = require("./src/utils/getIPAddress");
 const { errorHandler } = require("./src/middleware/errorHandler");
 const { morganImpl } = require("./src/configs/morgan");
@@ -19,56 +16,86 @@ app
   .use(express.json())
   .use(morganImpl)
   .use(errorHandler)
-  .set("view engine", "ejs")
-  .use(express.static("public"))
   .use(express.urlencoded({ extended: false }))
-  .set("views", path.join(__dirname, "views"))
-  .set("public", path.join(__dirname, "public"))
   .use("/", require("./src/routes"));
 
 var lsts = [];
 var data = {};
+var users = {};
 
-io.on("connection", (socket) => {
-  console.log("connected");
-  console.log(socket.id, "has joined");
-  if (socket.id.includes("user")) {
-    let dat = {
+setInterval(() => {
+  io.emit(
+    "users",
+    JSON.stringify({
       list: lsts,
       lights: data,
-    };
-    io.emit("users", stringify(dat));
-    // check user
-  }
-  if (socket.id.includes("light")) {
-    let id = socket.id.split("_")[1];
-    lsts.push(id);
-    data[id] = {
-      count: 0,
-      time: 0,
-    };
-  }
-  socket.on("lights", (msg) => {
-    console.log(msg);
-  });
-  socket.on("users", (msg) => {
-    console.log(msg);
-  });
-  socket.on("disconnect", function () {
-    // Emits a status message to the connected room when a socket client is disconnected
-    if (socket.id.includes("lights")) {
-      let id = socket.id.split("_")[1];
-      let index = lsts.indexOf(id);
-      lsts = lsts.splice(index, 1);
-      data[id] = null;
-    }
-  });
+    })
+  );
+}, 1000);
 
-  // Testing
-  socket.on('chat message', (msg) => {
-    console.log(msg);
-  io.emit('chat message', msg);
-});
+io.on("connection", (socket) => {
+  try {
+    let customId = socket.id;
+    // console.log(socket.id, "has joined");
+
+    // Disconnect
+    socket.on("disconnect", function () {
+      // console.log(customId, "has left");
+      if (customId.includes("light")) {
+        let id = customId.split("_")[1];
+        lsts = lsts.filter((datas) => datas != id);
+        data[id] = null;
+      }
+    });
+
+    socket.on("lights", (msg) => {
+      if (msg == "1") {
+        let id = customId.split("_")[1];
+        data[id]["count"]++;
+      }
+    });
+    socket.on("users", (msg) => {
+      // console.log(msg);
+    });
+
+    // Custom Id
+    socket.on("changeId", (msg) => {
+      users[socket.id] = msg;
+      customId = msg;
+      // console.log(customId, "is new id");
+      if (customId.includes("light")) {
+        let id = customId.split("_")[1];
+        if (!lsts.includes(id)) {
+          lsts.push(id);
+          data[id] = {
+            count: 0,
+            time: 30,
+            red: false,
+          };
+          setInterval(() => {
+            if (socket.connected) {
+              if (data[id]["time"] > 0) {
+                data[id]["time"]--;
+              } else {
+                if (data[id]["red"]) {
+                  data[id]["time"] = 30;
+                  data[id]["red"] = false;
+                  data[id]["count"] = 0;
+                } else {
+                  data[id]["time"] = 90;
+                  data[id]["red"] = true;
+                  data[id]["count"] = 0;
+                  
+                }
+              }
+            }
+          }, 1000);
+        }
+      }
+    });
+  } catch (e) {
+    console.log(e);
+  }
 });
 
 const PORT = Number(process.env.PORT) || 3000;
