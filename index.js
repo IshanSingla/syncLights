@@ -23,28 +23,61 @@ var lsts = [];
 var data = {};
 var users = {};
 
+const update = () => {
+  lsts.forEach((id) => {
+    if (data[id]["time"] > 0) {
+      data[id]["time"]--;
+    } else {
+      if (data[id]["red"]) {
+        data[id]["time"] = 30;
+        data[id]["red"] = false;
+        data[id]["count"] = 0;
+      } else {
+        data[id]["time"] = data[id]["redtime"];
+        data[id]["red"] = true;
+        data[id]["count"] = 0;
+      }
+    }
+  });
+};
+const joinUpdate = () => {
+  lsts.forEach((id, i) => {
+    data[id] = {};
+    var time = 120 / lsts.length;
+    data[id]["redtime"] = time * (lsts.length - 1);
+    if (i === 0) {
+      data[id]["time"] = time;
+      data[id]["red"] = false;
+      data[id]["count"] = 0;
+    } else {
+      data[id]["time"] = time * i;
+      data[id]["red"] = true;
+      data[id]["count"] = 0;
+    }
+  });
+  console.log(data);
+};
+
 setInterval(() => {
-  io.emit(
-    "users",
-    JSON.stringify({
-      list: lsts,
-      lights: data,
-    })
-  );
+  update();
+  var da = JSON.stringify({
+    list: lsts,
+    lights: data,
+  });
+  io.emit("users", da);
 }, 1000);
 
 io.on("connection", (socket) => {
   try {
     let customId = socket.id;
-    // console.log(socket.id, "has joined");
 
     // Disconnect
     socket.on("disconnect", function () {
-      // console.log(customId, "has left");
       if (customId.includes("light")) {
         let id = customId.split("_")[1];
         lsts = lsts.filter((datas) => datas != id);
         data[id] = null;
+        joinUpdate();
       }
     });
 
@@ -54,15 +87,12 @@ io.on("connection", (socket) => {
         data[id]["count"]++;
       }
     });
-    socket.on("users", (msg) => {
-      // console.log(msg);
-    });
+    socket.on("users", (msg) => {});
 
     // Custom Id
-    socket.on("changeId", (msg) => {
+    socket.on("changeId", async (msg) => {
       users[socket.id] = msg;
       customId = msg;
-      // console.log(customId, "is new id");
       if (customId.includes("light")) {
         let id = customId.split("_")[1];
         if (!lsts.includes(id)) {
@@ -71,25 +101,9 @@ io.on("connection", (socket) => {
             count: 0,
             time: 30,
             red: false,
+            redtime: 90,
           };
-          setInterval(() => {
-            if (socket.connected) {
-              if (data[id]["time"] > 0) {
-                data[id]["time"]--;
-              } else {
-                if (data[id]["red"]) {
-                  data[id]["time"] = 30;
-                  data[id]["red"] = false;
-                  data[id]["count"] = 0;
-                } else {
-                  data[id]["time"] = 90;
-                  data[id]["red"] = true;
-                  data[id]["count"] = 0;
-                  
-                }
-              }
-            }
-          }, 1000);
+          joinUpdate();
         }
       }
     });
