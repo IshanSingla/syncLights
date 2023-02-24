@@ -1,8 +1,7 @@
-import 'dart:io';
-
 import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:synclights/Components/EntryPoint.dart';
 import 'package:synclights/Screens/HomeScreen/main.dart';
 
 // Pages
@@ -35,7 +34,7 @@ class MyApp extends StatelessWidget {
       initialRoute: '/splash',
       routes: {
         "/splash": (context) => const SplashScreen(),
-        "/home": (context) => const HomeScreen(),
+        "/home": (context) => const EntryPoint(child: HomeScreen()),
         "/login": (context) => const LoginScreen(),
       },
     );

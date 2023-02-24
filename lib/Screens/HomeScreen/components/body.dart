@@ -4,15 +4,16 @@ import 'package:geolocator/geolocator.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
 import 'package:synclights/Components/scaffold.dart';
 import 'package:synclights/Screens/HomeScreen/components/DraggableScrollable.dart';
+import 'package:synclights/data/lights.dart';
 
 class Body extends StatefulWidget {
   const Body({Key? key}) : super(key: key);
 
   @override
-  _BodyState createState() => _BodyState();
+  BodyState createState() => BodyState();
 }
 
-class _BodyState extends State<Body> {
+class BodyState extends State<Body> {
   String address = '';
   final Completer<GoogleMapController> _controller = Completer();
   Future<Position> _getUserCurrentLocation() async {
@@ -41,19 +42,32 @@ class _BodyState extends State<Body> {
   @override
   void initState() {
     super.initState();
+    // fetch();
     _getUserCurrentLocation().then((value) async {
       setPoint(value.latitude, value.longitude);
     });
   }
 
+  fetch() async {
+    ListLights listLights = ListLights();
+    List<Lights> lights = await listLights.getLights(context);
+    for (Lights element in lights) {
+      // _markers.add(Marker(
+      //     markerId: MarkerId(element.id),
+      //     position: LatLng(element.lat, element.lon),
+      //     infoWindow: InfoWindow(title: element.name)));
+      setPoint(element.lat, element.lon);
+    }
+  }
+
   setPoint(double lat, double lon) async {
     final GoogleMapController controller = await _controller.future;
 
-    CameraPosition _kGooglePlex = CameraPosition(
+    CameraPosition kGooglePlex = CameraPosition(
       target: LatLng(lat, lon),
       zoom: 13,
     );
-    controller.animateCamera(CameraUpdate.newCameraPosition(_kGooglePlex));
+    controller.animateCamera(CameraUpdate.newCameraPosition(kGooglePlex));
     setState(() {});
   }
 
@@ -74,7 +88,7 @@ class _BodyState extends State<Body> {
               _controller.complete(controller);
             },
           ),
-          const DraggableScrollable()
+          DraggableScrollable()
         ],
       ),
     );

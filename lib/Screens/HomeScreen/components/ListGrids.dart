@@ -1,24 +1,55 @@
 // ignore_for_file: prefer_const_constructors_in_immutables
 
+import 'dart:convert';
 import 'package:flutter/material.dart';
+import 'package:socket_io_client/socket_io_client.dart' as IO;
 
-class LastGrids extends StatefulWidget {
+class LightsGrids extends StatefulWidget {
   final String name;
   final String id;
+  final IO.Socket socket;
 
-  const LastGrids({super.key, required this.name, required this.id});
+  LightsGrids(
+      {super.key, required this.name, required this.id, required this.socket});
 
   @override
-  LastGridsState createState() => LastGridsState();
+  LightsGridsState createState() => LightsGridsState();
 }
 
-class LastGridsState extends State<LastGrids> {
+class LightsGridsState extends State<LightsGrids> {
   int red = 100;
-  int yelew = 255;
+  int yelew = 100;
   int green = 100;
+  Map data = {"list":[], "lights":{}};
+
+  @override
+  void initState() {
+    super.initState();
+
+    widget.socket.on("users", (msg) {
+      data = json.decoder.convert(msg);
+      if (data["list"].isNotEmpty && data["list"].contains(widget.id)) {
+        if (data["lights"][widget.id]["red"]) {
+          red = 255;
+          green = 100;
+        } else {
+          green = 255;
+          red = 100;
+        }
+        setState(() => {});
+      } else {
+        red = 100;
+        green = 100;
+        data = {};
+        setState(() => {});
+      }
+    });
+  }
+
   @override
   Widget build(BuildContext context) {
     var width = MediaQuery.of(context).size.width;
+    Color color = data.isEmpty ? Colors.red : Colors.green;
     return Card(
       margin: const EdgeInsets.all(15),
       elevation: 5,
@@ -52,24 +83,28 @@ class LastGridsState extends State<LastGrids> {
             child: Column(
               children: [
                 Labels(
-                  keys: "Road Name: ",
+                  keys: "Road: ",
                   value: widget.name,
-                  color: Color.fromARGB(255, 255, 150, 0),
+                  color: const Color.fromARGB(255, 255, 150, 0),
                 ),
                 Labels(
                   keys: "Status: ",
-                  value: "InActive",
-                  color: Colors.red,
+                  value: data.isEmpty ? "InActive" : "Active",
+                  color: color,
                 ),
                 Labels(
-                  keys: "Vahicle Count: ",
-                  value: "None",
-                  color: Colors.red,
+                  keys: "Vehicle: ",
+                  value: data.isEmpty
+                      ? "None"
+                      : '${data["lights"][widget.id]["count"]}',
+                  color: color,
                 ),
                 Labels(
                   keys: "Timer: ",
-                  value: "None",
-                  color: Colors.red,
+                  value: data.isEmpty
+                      ? "None"
+                      : '${data["lights"][widget.id]["time"]} s',
+                  color: color,
                 ),
               ],
             ),
@@ -100,7 +135,7 @@ class Labels extends StatelessWidget {
         children: [
           Text(
             keys,
-            style: TextStyle(fontSize: 13),
+            style: const TextStyle(fontSize: 13),
           ),
           Text(
             value,
@@ -111,25 +146,3 @@ class Labels extends StatelessWidget {
     );
   }
 }
-
-// Widget Labels(
-//     {required String key,
-//     required String value,
-//     required Color color,
-//     required double size}) {
-//   return SizedBox(
-//     width: 200,
-//     child: Row(
-//       children: [
-//         Text(
-//           key,
-//           style: TextStyle(fontSize: 13),
-//         ),
-//         Text(
-//           value,
-//           style: TextStyle(color: color, fontSize: size),
-//         )
-//       ],
-//     ),
-//   );
-// }

@@ -10,10 +10,10 @@ class SplashScreen extends StatefulWidget {
   const SplashScreen({super.key});
 
   @override
-  _SplashState createState() => _SplashState();
+  SplashState createState() => SplashState();
 }
 
-class _SplashState extends State<SplashScreen> {
+class SplashState extends State<SplashScreen> {
   @override
   void initState() {
     super.initState();
@@ -39,18 +39,9 @@ class _SplashState extends State<SplashScreen> {
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
+    return const Scaffold(
       backgroundColor: Colors.black,
-      body: Stack(children: [
-        Container(
-          decoration: const BoxDecoration(
-            image: DecorationImage(
-                image: AssetImage('assets/background/Splash.png'),
-                fit: BoxFit.cover),
-          ),
-        ),
-        Body()
-      ]),
+      body: Body(),
     );
   }
 }

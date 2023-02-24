@@ -1,12 +1,29 @@
-// ignore_for_file: non_constant_identifier_names, avoid_function_literals_in_foreach_calls
+// ignore_for_file: non_constant_identifier_names, avoid_function_literals_in_foreach_calls, must_be_immutable
 
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
+import 'package:socket_io_client/socket_io_client.dart' as IO;
+
+//
 import 'package:synclights/Screens/HomeScreen/components/ListGrids.dart';
 import 'package:synclights/data/lights.dart';
 import 'package:synclights/utils/CoustomColours.dart';
+import 'package:synclights/utils/api.dart';
 
 class DraggableScrollable extends StatefulWidget {
-  const DraggableScrollable({super.key});
+  IO.Socket socket = IO.io("http://3.110.204.194:5050/", <String, dynamic>{
+    "transports": ["websocket"],
+    "autoConnect": true,
+  });
+  DraggableScrollable({super.key}) {
+    socket.connect();
+    socket.onConnect((data) {
+      User? user = FirebaseAuth.instance.currentUser;
+      if (user != null) {
+        socket.emit("changeId", "user_${user.uid}");
+      }
+    });
+  }
   @override
   DraggableScrollableState createState() => DraggableScrollableState();
 }
@@ -16,7 +33,8 @@ class DraggableScrollableState extends State<DraggableScrollable> {
     ListLights listLights = ListLights();
     List<Lights> lights = await listLights.getLights(context);
     lights.forEach((element) {
-      Listing.add(LastGrids(id: element.id, name: element.name));
+      Listing.add(
+          LightsGrids(id: element.id, name: element.name, socket: widget.socket));
     });
     setState(() {});
     return lights;
@@ -26,6 +44,11 @@ class DraggableScrollableState extends State<DraggableScrollable> {
   void initState() {
     super.initState();
     getLights();
+  }
+
+  void dispose() {
+    super.dispose();
+    widget.socket.disconnect();
   }
 
   List<Widget> Listing = [
