@@ -20,7 +20,7 @@ class LightsGridsState extends State<LightsGrids> {
   int red = 100;
   int yelew = 100;
   int green = 100;
-  Map data = {"list":[], "lights":{}};
+  Map data = {"list": [], "lights": {}};
 
   @override
   void initState() {
@@ -28,6 +28,7 @@ class LightsGridsState extends State<LightsGrids> {
 
     widget.socket.on("users", (msg) {
       data = json.decoder.convert(msg);
+      print(data);
       if (data["list"].isNotEmpty && data["list"].contains(widget.id)) {
         if (data["lights"][widget.id]["red"]) {
           red = 255;
@@ -49,7 +50,9 @@ class LightsGridsState extends State<LightsGrids> {
   @override
   Widget build(BuildContext context) {
     var width = MediaQuery.of(context).size.width;
-    Color color = data.isEmpty ? Colors.red : Colors.green;
+    Color color = data["lights"]?[widget.id]?["count"] == null
+        ? Colors.red
+        : Colors.green;
     return Card(
       margin: const EdgeInsets.all(15),
       elevation: 5,
@@ -89,21 +92,23 @@ class LightsGridsState extends State<LightsGrids> {
                 ),
                 Labels(
                   keys: "Status: ",
-                  value: data.isEmpty ? "InActive" : "Active",
+                  value: data["lights"]?[widget.id]?["count"] == null
+                      ? "InActive"
+                      : "Active",
                   color: color,
                 ),
                 Labels(
                   keys: "Vehicle: ",
-                  value: data.isEmpty
-                      ? "None"
-                      : '${data["lights"][widget.id]["count"]}',
+                  value: data["lights"]?[widget.id]?["count"] == null
+                      ? 'None'
+                      : '${data["lights"]?[widget.id]?["count"]}',
                   color: color,
                 ),
                 Labels(
                   keys: "Timer: ",
-                  value: data.isEmpty
-                      ? "None"
-                      : '${data["lights"][widget.id]["time"]} s',
+                  value: data["lights"]?[widget.id]?["time"] == null
+                      ? 'None'
+                      : '${data["lights"]?[widget.id]?["time"]}',
                   color: color,
                 ),
               ],

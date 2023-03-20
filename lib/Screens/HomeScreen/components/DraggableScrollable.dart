@@ -11,7 +11,7 @@ import 'package:synclights/utils/CoustomColours.dart';
 import 'package:synclights/utils/api.dart';
 
 class DraggableScrollable extends StatefulWidget {
-  IO.Socket socket = IO.io("http://3.110.204.194:5050/", <String, dynamic>{
+  IO.Socket socket = IO.io("https://syncllight.herokuapp.com/", <String, dynamic>{
     "transports": ["websocket"],
     "autoConnect": true,
   });
