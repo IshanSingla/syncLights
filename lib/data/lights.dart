@@ -1,17 +1,14 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
+import 'package:google_maps_flutter/google_maps_flutter.dart';
 import 'package:synclights/Components/scaffold.dart';
 
 class Lights {
-  double lat;
-  double lon;
+  LatLng codinates;
+
   String name;
   String id;
-  Lights(
-      {required this.lat,
-      required this.lon,
-      required this.name,
-      required this.id});
+  Lights({required this.name, required this.codinates, required this.id});
 }
 
 class ListLights {
@@ -25,8 +22,13 @@ class ListLights {
       List<Lights> lightsList = [];
       for (var element in querySnapshot.docs) {
         Map data = element.data() as Map;
-        lightsList.add(Lights(
-            lat: 0, lon: 0, name: data["signalName"] as String, id: element.id));
+        var light = Lights(
+            codinates: LatLng(data["signalLocation"]?["lat"] ?? 0,
+                data["signalLocation"]["log"] ?? 0),
+            name: data["signalName"] as String,
+            id: element.id);
+
+        lightsList.add(light);
       }
       return lightsList;
     } catch (e) {

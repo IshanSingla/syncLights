@@ -8,10 +8,10 @@ import 'package:socket_io_client/socket_io_client.dart' as IO;
 import 'package:synclights/Screens/HomeScreen/components/ListGrids.dart';
 import 'package:synclights/data/lights.dart';
 import 'package:synclights/utils/CoustomColours.dart';
-import 'package:synclights/utils/api.dart';
 
 class DraggableScrollable extends StatefulWidget {
-  IO.Socket socket = IO.io("https://syncllight.herokuapp.com/", <String, dynamic>{
+  IO.Socket socket =
+      IO.io("https://syncllight.herokuapp.com/", <String, dynamic>{
     "transports": ["websocket"],
     "autoConnect": true,
   });
@@ -33,8 +33,8 @@ class DraggableScrollableState extends State<DraggableScrollable> {
     ListLights listLights = ListLights();
     List<Lights> lights = await listLights.getLights(context);
     lights.forEach((element) {
-      Listing.add(
-          LightsGrids(id: element.id, name: element.name, socket: widget.socket));
+      Listing.add(LightsGrids(
+          id: element.id, name: element.name, socket: widget.socket));
     });
     setState(() {});
     return lights;
@@ -46,6 +46,7 @@ class DraggableScrollableState extends State<DraggableScrollable> {
     getLights();
   }
 
+  @override
   void dispose() {
     super.dispose();
     widget.socket.disconnect();

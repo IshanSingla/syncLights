@@ -28,7 +28,6 @@ class LightsGridsState extends State<LightsGrids> {
 
     widget.socket.on("users", (msg) {
       data = json.decoder.convert(msg);
-      print(data);
       if (data["list"].isNotEmpty && data["list"].contains(widget.id)) {
         if (data["lights"][widget.id]["red"]) {
           red = 255;
