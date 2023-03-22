@@ -1,5 +1,6 @@
 // ignore_for_file: use_build_context_synchronously
 import 'dart:async';
+import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:synclights/Components/scaffold.dart';
@@ -22,13 +23,24 @@ class SplashState extends State<SplashScreen> {
 
   Future<void> check() async {
     try {
-      User? user = FirebaseAuth.instance.currentUser;
-      if (user?.uid != null) {
-        scaffold("Login Sucessfull", context);
-        Navigator.pushReplacementNamed(context, '/home');
+      FirebaseFirestore instance = FirebaseFirestore.instance;
+      instance.settings = const Settings(
+        cacheSizeBytes: Settings.CACHE_SIZE_UNLIMITED,
+      );
+      Map data = (await instance.collection('data').doc("updater").get()).data()
+          as Map;
+      print(data);
+      if (data["v"] != 1) {
+        Navigator.pushReplacementNamed(context, '/update');
       } else {
-        await signOut(context);
-        Navigator.pushReplacementNamed(context, '/login');
+        User? user = FirebaseAuth.instance.currentUser;
+        if (user?.uid != null) {
+          scaffold("Login Sucessfull", context);
+          Navigator.pushReplacementNamed(context, '/home');
+        } else {
+          await signOut(context);
+          Navigator.pushReplacementNamed(context, '/login');
+        }
       }
     } catch (e) {
       await signOut(context);

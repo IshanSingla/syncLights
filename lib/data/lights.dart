@@ -18,7 +18,7 @@ class ListLights {
     try {
       FirebaseFirestore firestore = FirebaseFirestore.instance;
       CollectionReference lights = firestore.collection('trafficLights');
-      QuerySnapshot querySnapshot = await lights.get();
+      QuerySnapshot querySnapshot = await lights.orderBy('index').get();
       List<Lights> lightsList = [];
       for (var element in querySnapshot.docs) {
         Map data = element.data() as Map;

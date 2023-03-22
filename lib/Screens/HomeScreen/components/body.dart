@@ -1,8 +1,7 @@
 // ignore_for_file: prefer_const_literals_to_create_immutables
 
 import 'dart:async';
-import 'dart:ffi';
-import 'dart:math';
+import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 import 'package:geolocator/geolocator.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
@@ -10,6 +9,7 @@ import 'package:synclights/Components/scaffold.dart';
 import 'package:synclights/Screens/HomeScreen/components/DraggableScrollable.dart';
 import 'package:synclights/data/lights.dart';
 import 'package:synclights/utils/CoustomColours.dart';
+import 'package:synclights/utils/CustomClaims.dart';
 import 'package:synclights/utils/converter.dart';
 
 class Body extends StatefulWidget {
@@ -19,6 +19,7 @@ class Body extends StatefulWidget {
 }
 
 class BodyState extends State<Body> {
+  final textController = TextEditingController();
   final Completer<GoogleMapController> _controller = Completer();
   final Set<Marker> _markers = <Marker>{};
   final Set<Polyline> _polylines = {
@@ -31,8 +32,6 @@ class BodyState extends State<Body> {
   };
   bool condition = false;
   late final BitmapDescriptor ambulanceicon;
-  LatLng hospital = LatLng(30.6833457, 76.851791);
-
   Future<Position> _getUserCurrentLocation() async {
     await Geolocator.requestPermission()
         .then((value) {})
@@ -70,7 +69,7 @@ class BodyState extends State<Body> {
         await getBytesFromAsset("assets/ambulance.png", 70));
     _markers.add(Marker(
       markerId: const MarkerId("User"),
-      position: LatLng(30.523982362724837, 76.66729521006346),
+      position: const LatLng(30.523982362724837, 76.66729521006346),
       icon: ambulanceicon,
     ));
     BitmapDescriptor markerbitmap = BitmapDescriptor.fromBytes(
@@ -82,7 +81,7 @@ class BodyState extends State<Body> {
           icon: markerbitmap));
       _polylines.elementAt(0).points.add(element.codinates);
     }
-    _polylines.elementAt(0).points.add(hospital);
+    _polylines.elementAt(0).points.add(const LatLng(30.6833457, 76.851791));
   }
 
   @override
@@ -93,7 +92,98 @@ class BodyState extends State<Body> {
         children: [
           GoogleMap(
             mapType: MapType.normal,
-            onTap: (argument) => print(argument),
+            onTap: (argument) async {
+              bool admin;
+              CustomClaims().then((value) {
+                try {
+                  admin = value["admin"] ?? false;
+                } catch (e) {
+                  admin = false;
+                }
+                if (admin) {
+                  List<Map<String, String>> list = [
+                    {"name": "Select Road Circle", "id": ""}
+                  ];
+                  FirebaseFirestore firestore = FirebaseFirestore.instance;
+                  CollectionReference lights =
+                      firestore.collection('roadCircles');
+                  lights.get().then((value) {
+                    for (var element in value.docs) {
+                      list.add({
+                        "name": element["circleName"],
+                        "id": element.id,
+                      });
+                    }
+                  }).then((value) {
+                    Object value = list[0];
+                    showDialog(
+                      context: context,
+                      builder: (BuildContext context) {
+                        return AlertDialog(
+                          title: const Text("Enter Light Name"),
+                          content: Column(
+                            mainAxisSize: MainAxisSize.min,
+                            children: [
+                              TextField(
+                                controller: textController,
+                              ),
+                              DropdownButton(
+                                value: value,
+                                items: list.map((Map items) {
+                                  return DropdownMenuItem(
+                                    value: items,
+                                    child: Text(items["name"]),
+                                  );
+                                }).toList(),
+                                onChanged: (Object? newValue) {
+                                  setState(() {
+                                    value = newValue!;
+                                  });
+                                },
+                              ),
+                            ],
+                          ),
+                          actions: [
+                            ElevatedButton(
+                              onPressed: () {
+                                Navigator.pop(context);
+                              },
+                              child: const Text('CANCEL'),
+                            ),
+                            ElevatedButton(
+                              onPressed: () {
+                                FirebaseFirestore firestore =
+                                    FirebaseFirestore.instance;
+                                CollectionReference lights =
+                                    firestore.collection('trafficLights');
+                                lights.add({
+                                  "signalLocation": {
+                                    "lat": argument.latitude,
+                                    "log": argument.longitude,
+                                  },
+                                  "signalName": textController.text,
+                                  "roadCircle":
+                                      (value as Map<String, String>)["id"]
+                                }).then((value) {
+                                  scaffold("Added SucessFully", context);
+                                  Navigator.pop(context);
+                                }).onError((error, stackTrace) {
+                                  scaffold(error.toString(), context);
+                                  Navigator.pop(context);
+                                });
+                              },
+                              child: const Text('OK'),
+                            ),
+                          ],
+                        );
+                      },
+                    );
+                  });
+                }
+              }).onError((error, stackTrace) {
+                scaffold(error.toString(), context);
+              });
+            },
             trafficEnabled: true,
             initialCameraPosition: _kGooglePlex,
             polylines: condition ? _polylines : {},
@@ -102,7 +192,7 @@ class BodyState extends State<Body> {
               Marker(
                 visible: condition,
                 markerId: const MarkerId("hospital"),
-                position: hospital,
+                position: const LatLng(30.6833457, 76.851791),
               )
             },
             myLocationButtonEnabled: false,
@@ -125,7 +215,7 @@ class BodyState extends State<Body> {
                 });
               },
               icon: Image.asset('assets/ambulance.png', height: 50),
-              label: Text(''),
+              label: const Text(''),
             ),
           ),
           DraggableScrollable()
