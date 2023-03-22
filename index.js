@@ -55,7 +55,6 @@ const joinUpdate = () => {
       data[id]["count"] = 0;
     }
   });
-  console.log(data);
 };
 
 setInterval(() => {

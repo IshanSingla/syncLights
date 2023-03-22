@@ -1,6 +1,5 @@
-
 const getHTML = (id) => {
-    return `<!DOCTYPE html>
+  return `<!DOCTYPE html>
     <html lang="en">
     <head>
         <meta charset="UTF-8">
@@ -52,9 +51,50 @@ const getHTML = (id) => {
         });
     </script>
     </html>
-    `
-}
+    `;
+};
 
-module.exports={
-    getHTML
-}
+const getAllHTML = (data) => {
+  return `<!DOCTYPE html>
+    <html lang="en">
+    <head>
+        <meta charset="UTF-8">
+        <meta http-equiv="X-UA-Compatible" content="IE=edge">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <title>SyncLights</title>
+        <script src="https://cdn.tailwindcss.com"></script>
+        <link rel="stylesheet" media="screen" href="https://fontlibrary.org//face/segment7" type="text/css"/>
+    </head>
+    <body>
+        <div class="w-screen h-screen flex items-center bg-teal-600 justify-center">
+        <table class="table-auto">
+            <thead>
+                <tr>
+                    <th class="px-4 py-2">NO</th>
+                    <th class="px-4 py-2">Circle Name</th>
+                    <th class="px-4 py-2">Roadname</th>
+                    <th class="px-4 py-2">Link</th>
+                </tr>
+            </thead>
+            <tbody>
+
+            ${data.map((item,index) => {
+                return `<tr>
+                    <td class="border px-4 py-2">${index+1}</td>
+                    <td class="border px-4 py-2">${item.roadCircle}</td>
+                    <td class="border px-4 py-2">${item.signalName}</td>
+                    <td class="border px-4 py-2"><a target="_blank" href="/IoTDevices/${item.id}">Link</a></td>
+                </tr>`;
+            }).join("")}
+            </tbody>
+        </table>
+        </div>
+    </body>
+    </html>
+    `;
+};
+
+module.exports = {
+  getHTML,
+  getAllHTML
+};
