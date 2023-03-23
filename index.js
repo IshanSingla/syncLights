@@ -14,7 +14,7 @@ const io = socket(server);
 
 app
   .use(express.json())
-  .use(morganImpl)
+  // .use(morganImpl)
   .use(errorHandler)
   .use(express.urlencoded({ extended: false }))
   .use("/", require("./src/routes"));

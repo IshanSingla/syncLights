@@ -23,6 +23,8 @@ router.get("/IoTDevices/:id", (req, res) => {
   res.status(200).send(getHTML(id));
 });
 
+router.use("/ambulance", require("./ambulance"));
+
 router.use(
   "/user/:email",
   (req, res, next) => {
